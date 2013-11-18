@@ -1,0 +1,72 @@
+{
+  "uuid": "3ae8c547-c9bb-4e7e-a963-dc68797770d0",
+  "shortName": "Minimalist 2.0",
+  "longName": "Minimalist 2.0",
+  "companyName": "Jnm",
+  "versionCode": 2,
+  "versionLabel": "2.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+    "media": [
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_0",
+        "file": "images/0.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_1",
+        "file": "images/1.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_2",
+        "file": "images/2.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_3",
+        "file": "images/3.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_4",
+        "file": "images/4.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_5",
+        "file": "images/5.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_6",
+        "file": "images/6.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_7",
+        "file": "images/7.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_8",
+        "file": "images/8.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_9",
+        "file": "images/9.png"
+      }
+    ]
+  }
+}

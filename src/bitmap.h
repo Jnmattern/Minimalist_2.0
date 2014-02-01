@@ -57,6 +57,7 @@ static inline void bmpPutPixel(GBitmap *bmp, int x, int y, GColor c) {
     if (c == GColorWhite) ((uint8_t *)bmp->addr)[byteoffset] |= (1<<(x%8));
 }
 
+
 static void bmpNegative(GBitmap *bmp) {
     for (int i=0; i<bmp->row_size_bytes*bmp->bounds.size.h; i++) ((uint8_t *)bmp->addr)[i] = ~((uint8_t *)bmp->addr)[i];
 }
@@ -98,7 +99,6 @@ static inline void bmpFill(GBitmap *bmp, GColor c) {
 		d[i] = p;
 	}
 }
-
 
 static void bmpDrawLine(GBitmap *bmp, GPoint p1, GPoint p2, GColor c) {
 	int dx, dy, e;
@@ -285,6 +285,7 @@ static void bmpDrawLine(GBitmap *bmp, GPoint p1, GPoint p2, GColor c) {
 		}
 	}
 }
+
 /*\
 |*| bmpDrawArc function thanks to Cameron MacFarland (http://forums.getpebble.com/profile/12561/Cameron%20MacFarland)
 \*/
@@ -330,6 +331,7 @@ static void bmpDrawArc(GBitmap *bmp, GPoint center, int r, int t, int s, int e, 
 		}
 	}
 }
+
 
 static void bmpDrawCircle(GBitmap *bmp, GPoint center, int r, GColor c) {
 	int x = 0, y = r, d = r-1;

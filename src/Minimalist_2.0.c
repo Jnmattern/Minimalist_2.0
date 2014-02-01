@@ -31,7 +31,7 @@ Window *window;
 Layer *layer, *rootLayer;
 bool clock12;
 time_t now;
-struct tm last = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, "" };
+struct tm last = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 static int radius = SCREENW/2-1;
 static int a1, a2, la1, la2;
 static const GPoint center = { CX, CX };
@@ -41,7 +41,7 @@ char buffer[256] = "";
 int showSeconds = true;
 int displayMode = 0;
 
-bool forceRefresh = false;
+bool forceRefresh = true;
 
 static inline void drawSec(GBitmap *bmp, GPoint center, int a1, int a2, GColor c) {
 	if (a2 <= 360) {
@@ -269,8 +269,8 @@ void handle_init() {
 	window_stack_push(window, true);
 	window_set_background_color(window, GColorBlack);
 	
-        app_message_init();
-        readConfig();
+    app_message_init();
+    readConfig();
 
 	clock12 = !clock_is_24h_style();
 	
@@ -294,6 +294,8 @@ void handle_deinit() {
 	int i;
 
 	tick_timer_service_unsubscribe();
+
+	layer_destroy(layer);
 
 	for (i=0; i<NUM_IMAGES; i++) {
 		gbitmap_destroy(digitBmp[i]);

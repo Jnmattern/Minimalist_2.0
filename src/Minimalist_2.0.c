@@ -59,121 +59,121 @@ void update_display(Layer *layer, GContext *ctx) {
 void handle_tick(struct tm *now, TimeUnits units_changed) {
 	static GRect clipRect = { {0, 0}, {SCREENW, DIGIT_SIZE} };
 	int i, a, digit[4], x;
-
+	
 	if (!forceRefresh && !showSeconds && !(units_changed & MINUTE_UNIT)) {
 		return;
 	}
 	
 	if (forceRefresh || (now->tm_min != last.tm_min)) {
 	    if (displayMode == 2) {
-		//#if MINUTES_AT_HOUR_HAND
-		now->tm_hour = now->tm_hour%12;
-		
-		digit[0] = now->tm_min/10;
-		digit[1] = now->tm_min%10;
-
-		bmpFill(&bitmap, GColorBlack);
-		
-		if (now->tm_hour < 6) {
-			a = 30*(now->tm_hour-3) + now->tm_min/2;
-			for (i=0;i<2;i++) {
-				x = CX + 69 + (i-2)*(DIGIT_SIZE+DIGIT_SPACE);
-				bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-			}
-			clipRect.origin.x = CX + 69 - 2*(DIGIT_SIZE+DIGIT_SPACE);
-		} else {
-			a = 30*(now->tm_hour-9) + now->tm_min/2;
-			for (i=0;i<2;i++) {
-				x = CX - 69 + DIGIT_SPACE + i*(DIGIT_SIZE+DIGIT_SPACE);
-				bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-			}
-			clipRect.origin.x = CX - 69 + DIGIT_SPACE;
-		}
-		clipRect.size.w = 2*DIGIT_SIZE + DIGIT_SPACE;
-	    } else {
-		//#else // MINUTES_AT_HOUR_HAND
-		if (clock12) {
+			//#if MINUTES_AT_HOUR_HAND
 			now->tm_hour = now->tm_hour%12;
-			if (now->tm_hour == 0) now->tm_hour = 12;
-		}
-
-		if (displayMode == 1) {
-			//#if HOUR_AT_MINUTE_HAND
-			digit[0] = now->tm_hour/10;
-			digit[1] = now->tm_hour%10;
-		} else {
-			//#else // HOUR_AT_MINUTE_HAND
-			digit[0] = now->tm_hour/10;
-			digit[1] = now->tm_hour%10;
-			digit[2] = now->tm_min/10;
-			digit[3] = now->tm_min%10;
-			//#endif // HOUR_AT_MINUTE_HAND
-		}
-		
-		bmpFill(&bitmap, GColorBlack);
-		
-		if (now->tm_min < 30) {
-			a = 6*(now->tm_min-15);
-			if (displayMode == 1) {
-				//#if HOUR_AT_MINUTE_HAND
-				for (i=0; i<2; i++) {
-					if (i != 0 || digit[i] != 0) {
-						x = CX + 69 + (i-2)*(DIGIT_SIZE+DIGIT_SPACE);
-						bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-					}
+			
+			digit[0] = now->tm_min/10;
+			digit[1] = now->tm_min%10;
+			
+			bmpFill(&bitmap, GColorBlack);
+			
+			if (now->tm_hour < 6) {
+				a = 30*(now->tm_hour-3) + now->tm_min/2;
+				for (i=0;i<2;i++) {
+					x = CX + 69 + (i-2)*(DIGIT_SIZE+DIGIT_SPACE);
+					bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
 				}
 				clipRect.origin.x = CX + 69 - 2*(DIGIT_SIZE+DIGIT_SPACE);
 			} else {
-				//#else // HOUR_AT_MINUTE_HAND
-				for (i=0; i<4; i++) {
-					if (i != 0 || digit[i] != 0) {
-						x = CX-DIGIT_SIZE+(DIGIT_SIZE+DIGIT_SPACE)*i+(DIGIT_SPACE*(i>1));
-						bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-					}
+				a = 30*(now->tm_hour-9) + now->tm_min/2;
+				for (i=0;i<2;i++) {
+					x = CX - 69 + DIGIT_SPACE + i*(DIGIT_SIZE+DIGIT_SPACE);
+					bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
 				}
-				clipRect.origin.x = CX - DIGIT_SIZE;
-				//#endif // HOUR_AT_MINUTE_HAND
+				clipRect.origin.x = CX - 69 + DIGIT_SPACE;
 			}
-		} else {
-			a = 6*(now->tm_min-45);
+			clipRect.size.w = 2*DIGIT_SIZE + DIGIT_SPACE;
+	    } else {
+			//#else // MINUTES_AT_HOUR_HAND
+			if (clock12) {
+				now->tm_hour = now->tm_hour%12;
+				if (now->tm_hour == 0) now->tm_hour = 12;
+			}
+			
 			if (displayMode == 1) {
 				//#if HOUR_AT_MINUTE_HAND
-				for (i=0; i<2; i++) {
-					if (i != 0 || digit[i] != 0) {
-						if (digit[0] == 0) {
-							x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(5-i)-(DIGIT_SPACE*(i<2));
-						} else {
-							x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(4-i)-(DIGIT_SPACE*(i<2));
-						}
-						bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-					}
-				}
-				clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
+				digit[0] = now->tm_hour/10;
+				digit[1] = now->tm_hour%10;
 			} else {
 				//#else // HOUR_AT_MINUTE_HAND
-				for (i=0; i<4; i++) {
-					if (i != 0 || digit[i] != 0) {
-						if (digit[0] == 0) {
-							x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(5-i)-(DIGIT_SPACE*(i<2));
-						} else {
-							x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(4-i)-(DIGIT_SPACE*(i<2));
-						}
-						bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
-					}
-				}
-				clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
+				digit[0] = now->tm_hour/10;
+				digit[1] = now->tm_hour%10;
+				digit[2] = now->tm_min/10;
+				digit[3] = now->tm_min%10;
 				//#endif // HOUR_AT_MINUTE_HAND
 			}
-		}
-		clipRect.size.w = 4*(DIGIT_SIZE + DIGIT_SPACE);
-	    }	
+			
+			bmpFill(&bitmap, GColorBlack);
+			
+			if (now->tm_min < 30) {
+				a = 6*(now->tm_min-15);
+				if (displayMode == 1) {
+					//#if HOUR_AT_MINUTE_HAND
+					for (i=0; i<2; i++) {
+						if (i != 0 || digit[i] != 0) {
+							x = CX + 69 + (i-2)*(DIGIT_SIZE+DIGIT_SPACE);
+							bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
+						}
+					}
+					clipRect.origin.x = CX + 69 - 2*(DIGIT_SIZE+DIGIT_SPACE);
+				} else {
+					//#else // HOUR_AT_MINUTE_HAND
+					for (i=0; i<4; i++) {
+						if (i != 0 || digit[i] != 0) {
+							x = CX-DIGIT_SIZE+(DIGIT_SIZE+DIGIT_SPACE)*i+(DIGIT_SPACE*(i>1));
+							bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
+						}
+					}
+					clipRect.origin.x = CX - DIGIT_SIZE;
+					//#endif // HOUR_AT_MINUTE_HAND
+				}
+			} else {
+				a = 6*(now->tm_min-45);
+				if (displayMode == 1) {
+					//#if HOUR_AT_MINUTE_HAND
+					for (i=0; i<2; i++) {
+						if (i != 0 || digit[i] != 0) {
+							if (digit[0] == 0) {
+								x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(5-i)-(DIGIT_SPACE*(i<2));
+							} else {
+								x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(4-i)-(DIGIT_SPACE*(i<2));
+							}
+							bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
+						}
+					}
+					clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
+				} else {
+					//#else // HOUR_AT_MINUTE_HAND
+					for (i=0; i<4; i++) {
+						if (i != 0 || digit[i] != 0) {
+							if (digit[0] == 0) {
+								x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(5-i)-(DIGIT_SPACE*(i<2));
+							} else {
+								x = CX+DIGIT_SPACE+1+DIGIT_SIZE-(DIGIT_SIZE+DIGIT_SPACE)*(4-i)-(DIGIT_SPACE*(i<2));
+							}
+							bmpSub(digitBmp[digit[i]], &bitmap, digitBmp[digit[i]]->bounds, GPoint(x, 0));
+						}
+					}
+					clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
+					//#endif // HOUR_AT_MINUTE_HAND
+				}
+			}
+			clipRect.size.w = 4*(DIGIT_SIZE + DIGIT_SPACE);
+	    }
 	    //#endif // MINUTES_AT_HOUR_HAND
 		bmpFill(&bitmap2, GColorBlack);
-
+		
 		bmpRotate(&bitmap, &bitmap2, a, &clipRect, grect_center_point(&bitmap.bounds), GPoint(0,CX-bitmap.bounds.size.h/2));
 		
 		bmpDrawArc(&bitmap2, center, radius, 2, 0, 360, GColorWhite);
-
+		
 		if (showSeconds && (last.tm_hour != -1)) {
 			drawSec(&bitmap2, center, 267, 273, GColorBlack);
 		}
@@ -202,56 +202,56 @@ void logVariables(const char *msg) {
 
 void applyConfig() {
 	forceRefresh = true;
-        layer_mark_dirty(rootLayer);
+	last.tm_hour = last.tm_min = last.tm_sec = -1;
+	layer_mark_dirty(rootLayer);
 }
 
 bool checkAndSaveInt(int *var, int val, int key) {
-        if (*var != val) {
-                *var = val;
-                persist_write_int(key, val);
-                return true;
-        } else {
-                return false;
-        }
+	if (*var != val) {
+		*var = val;
+		persist_write_int(key, val);
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
 }
 
 void in_received_handler(DictionaryIterator *received, void *context) {
-        bool somethingChanged = false;
-
-        Tuple *seconds = dict_find(received, CONFIG_KEY_SECONDS);
-        Tuple *displaymode = dict_find(received, CONFIG_KEY_DISPLAYMODE);
-
-        if (seconds && displaymode) {
-                somethingChanged |= checkAndSaveInt(&showSeconds, seconds->value->int32, CONFIG_KEY_SECONDS);
-                somethingChanged |= checkAndSaveInt(&displayMode, displaymode->value->int32, CONFIG_KEY_DISPLAYMODE);
-
-                logVariables("ReceiveHandler");
-
-                if (somethingChanged) {
-                        applyConfig();
-                }
-        }
+	bool somethingChanged = false;
+	
+	Tuple *seconds = dict_find(received, CONFIG_KEY_SECONDS);
+	Tuple *displaymode = dict_find(received, CONFIG_KEY_DISPLAYMODE);
+	
+	if (seconds && displaymode) {
+		somethingChanged |= checkAndSaveInt(&showSeconds, seconds->value->int32, CONFIG_KEY_SECONDS);
+		somethingChanged |= checkAndSaveInt(&displayMode, displaymode->value->int32, CONFIG_KEY_DISPLAYMODE);
+		
+		logVariables("ReceiveHandler");
+		
+		if (somethingChanged) {
+			applyConfig();
+		}
+	}
 }
 
 
 void readConfig() {
-        if (persist_exists(CONFIG_KEY_SECONDS)) {
-                showSeconds = persist_read_int(CONFIG_KEY_SECONDS);
-        } else {
-                showSeconds = true;
-        }
-
-        if (persist_exists(CONFIG_KEY_DISPLAYMODE)) {
-                displayMode = persist_read_int(CONFIG_KEY_DISPLAYMODE);
-        } else {
-                displayMode = 1;
-        }
-
-        logVariables("readConfig");
-
+	if (persist_exists(CONFIG_KEY_SECONDS)) {
+		showSeconds = persist_read_int(CONFIG_KEY_SECONDS);
+	} else {
+		showSeconds = true;
+	}
+	
+	if (persist_exists(CONFIG_KEY_DISPLAYMODE)) {
+		displayMode = persist_read_int(CONFIG_KEY_DISPLAYMODE);
+	} else {
+		displayMode = 1;
+	}
+	
+	logVariables("readConfig");
 }
 
 static void app_message_init(void) {

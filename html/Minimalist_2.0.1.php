@@ -44,9 +44,9 @@
 	$s = array( "", "", "" );
 	$s[$displaymode] = " checked";
 	
-	echo '<input id="format1" name="displaymode" value="0" data-theme="" type="radio"' . $s[0] . '><label for="format1">Hours & Minutes</label>';
-	echo '<input id="format2" name="displaymode" value="1" data-theme="" type="radio"' . $s[1] . '><label for="format2">Hours at minute hand</label>';
-	echo '<input id="format3" name="displaymode" value="2" data-theme="" type="radio"' . $s[2] . '><label for="format3">Minutes at hour hand</label>';
+	echo '<input id="format1" name="displaymode" value="0" data-theme="" type="radio"' . $s[0] . '><label for="format1">Hours & Minutes<br/><img src="Minimalist-HourAndMinutes.png" width="72" height="84"></label>';
+	echo '<input id="format2" name="displaymode" value="1" data-theme="" type="radio"' . $s[1] . '><label for="format2">Hours at minute hand<br/><img src="Minimalist-HourAtMinuteHand.png" width="72" height="84"></label>';
+	echo '<input id="format3" name="displaymode" value="2" data-theme="" type="radio"' . $s[2] . '><label for="format3">Minutes at hour hand<br/><img src="Minimalist-MinutesAtHourHand.png" width="72" height="84"></label>';
 	?>
 </fieldset>
 </div>

@@ -3,9 +3,9 @@
 #include "bitmap.h"
 #include "Minimalist_2.0.h"
 
-//#define DRAW_SECONDS false
-//#define MINUTES_AT_HOUR_HAND false
-//#define HOUR_AT_MINUTE_HAND true
+#define DISPLAYMODE_HOUR_AND_MINUTES 0
+#define DISPLAYMODE_HOUR_AT_MINUTE_HAND 1
+#define DISPLAYMODE_MINUTES_AT_HOUR_HAND 2
 
 #define SCREENW 144
 #define SCREENH 168
@@ -15,8 +15,8 @@
 #define DIGIT_SPACE 2
 
 enum {
-        CONFIG_KEY_SECONDS     = 40,
-        CONFIG_KEY_DISPLAYMODE = 41
+	CONFIG_KEY_SECONDS     = 40,
+	CONFIG_KEY_DISPLAYMODE = 41
 };
 
 #define NUM_IMAGES 10
@@ -26,10 +26,18 @@ const int digitId[NUM_IMAGES] = {
 	RESOURCE_ID_IMAGE_8, RESOURCE_ID_IMAGE_9
 };
 
+const int miniDigitId[NUM_IMAGES] = {
+	RESOURCE_ID_IMAGE_M0, RESOURCE_ID_IMAGE_M1, RESOURCE_ID_IMAGE_M2, RESOURCE_ID_IMAGE_M3,
+	RESOURCE_ID_IMAGE_M4, RESOURCE_ID_IMAGE_M5, RESOURCE_ID_IMAGE_M6, RESOURCE_ID_IMAGE_M7,
+	RESOURCE_ID_IMAGE_M8, RESOURCE_ID_IMAGE_M9
+};
+
 GBitmap *digitBmp[NUM_IMAGES];
+GBitmap *miniDigitBmp[NUM_IMAGES];
+GBitmap *miniPercentBmp, *miniPointBmp, *btOkBmp, *btFailedBmp;
+
 Window *window;
 Layer *layer, *rootLayer;
-bool clock12;
 time_t now;
 struct tm last = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 static int radius = SCREENW/2-1;
@@ -41,6 +49,8 @@ char buffer[256] = "";
 int showSeconds = true;
 int displayMode = 0;
 
+bool showInfo = false;
+bool btConnected = false;
 bool forceRefresh = true;
 
 static inline void drawSec(GBitmap *bmp, GPoint center, int a1, int a2, GColor c) {
@@ -54,6 +64,50 @@ static inline void drawSec(GBitmap *bmp, GPoint center, int a1, int a2, GColor c
 
 void update_display(Layer *layer, GContext *ctx) {
 	graphics_draw_bitmap_in_rect(ctx, &bitmap2, GRect(0,12,SCREENW,SCREENW));
+	
+	if (showInfo) {
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "update_display() -> showInfo");	
+
+		GRect r = { { 0, 0 }, { 10, 10 } };
+		GRect btRect;
+		GBitmap *btBmp;
+		BatteryChargeState chargeState = battery_state_service_peek();
+		char batteryLevel[] = "100%";
+		int len = snprintf(batteryLevel, sizeof(batteryLevel), "%d%%", chargeState.charge_percent);
+		
+		for (int i=0; i<len; i++) {
+			if (batteryLevel[i] != '%') {
+				graphics_draw_bitmap_in_rect(ctx, miniDigitBmp[batteryLevel[i] - '0'], r);
+			} else {
+				graphics_draw_bitmap_in_rect(ctx, miniPercentBmp, r);
+			}
+			
+			r.origin.x += 11;
+		}
+		
+		if (btConnected) {
+			btBmp = btOkBmp;
+		} else {
+			btBmp = btFailedBmp;
+		}
+		btRect.size = btBmp->bounds.size;
+		btRect.origin.x = 144-btRect.size.w;
+		btRect.origin.y = 0;
+		graphics_draw_bitmap_in_rect(ctx, btBmp, btRect);
+		
+		char date[] = "dd mm yyyy";
+		len = snprintf(date, sizeof(date), "%.2d %.2d %d", last.tm_mday, last.tm_mon+1, last.tm_year+1900);
+		r.origin.x = 72 - len*11/2;
+		r.origin.y = 158;
+		for (int i=0; i<len; i++) {
+			if (date[i] != ' ') {
+				graphics_draw_bitmap_in_rect(ctx, miniDigitBmp[date[i] - '0'], r);
+			} else {
+				graphics_draw_bitmap_in_rect(ctx, miniPointBmp, r);
+			}
+			r.origin.x += 11;
+		}		
+	}
 }
 
 void handle_tick(struct tm *now, TimeUnits units_changed) {
@@ -65,8 +119,7 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 	}
 	
 	if (forceRefresh || (now->tm_min != last.tm_min)) {
-	    if (displayMode == 2) {
-			//#if MINUTES_AT_HOUR_HAND
+	    if (displayMode == DISPLAYMODE_MINUTES_AT_HOUR_HAND) {
 			now->tm_hour = now->tm_hour%12;
 			
 			digit[0] = now->tm_min/10;
@@ -91,31 +144,26 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 			}
 			clipRect.size.w = 2*DIGIT_SIZE + DIGIT_SPACE;
 	    } else {
-			//#else // MINUTES_AT_HOUR_HAND
-			if (clock12) {
+			if (!clock_is_24h_style()) {
 				now->tm_hour = now->tm_hour%12;
 				if (now->tm_hour == 0) now->tm_hour = 12;
 			}
 			
-			if (displayMode == 1) {
-				//#if HOUR_AT_MINUTE_HAND
+			if (displayMode == DISPLAYMODE_HOUR_AT_MINUTE_HAND) {
 				digit[0] = now->tm_hour/10;
 				digit[1] = now->tm_hour%10;
 			} else {
-				//#else // HOUR_AT_MINUTE_HAND
 				digit[0] = now->tm_hour/10;
 				digit[1] = now->tm_hour%10;
 				digit[2] = now->tm_min/10;
 				digit[3] = now->tm_min%10;
-				//#endif // HOUR_AT_MINUTE_HAND
 			}
 			
 			bmpFill(&bitmap, GColorBlack);
 			
 			if (now->tm_min < 30) {
 				a = 6*(now->tm_min-15);
-				if (displayMode == 1) {
-					//#if HOUR_AT_MINUTE_HAND
+				if (displayMode == DISPLAYMODE_HOUR_AT_MINUTE_HAND) {
 					for (i=0; i<2; i++) {
 						if (i != 0 || digit[i] != 0) {
 							x = CX + 69 + (i-2)*(DIGIT_SIZE+DIGIT_SPACE);
@@ -124,7 +172,6 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 					}
 					clipRect.origin.x = CX + 69 - 2*(DIGIT_SIZE+DIGIT_SPACE);
 				} else {
-					//#else // HOUR_AT_MINUTE_HAND
 					for (i=0; i<4; i++) {
 						if (i != 0 || digit[i] != 0) {
 							x = CX-DIGIT_SIZE+(DIGIT_SIZE+DIGIT_SPACE)*i+(DIGIT_SPACE*(i>1));
@@ -132,12 +179,10 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 						}
 					}
 					clipRect.origin.x = CX - DIGIT_SIZE;
-					//#endif // HOUR_AT_MINUTE_HAND
 				}
 			} else {
 				a = 6*(now->tm_min-45);
-				if (displayMode == 1) {
-					//#if HOUR_AT_MINUTE_HAND
+				if (displayMode == DISPLAYMODE_HOUR_AT_MINUTE_HAND) {
 					for (i=0; i<2; i++) {
 						if (i != 0 || digit[i] != 0) {
 							if (digit[0] == 0) {
@@ -150,7 +195,6 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 					}
 					clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
 				} else {
-					//#else // HOUR_AT_MINUTE_HAND
 					for (i=0; i<4; i++) {
 						if (i != 0 || digit[i] != 0) {
 							if (digit[0] == 0) {
@@ -162,18 +206,15 @@ void handle_tick(struct tm *now, TimeUnits units_changed) {
 						}
 					}
 					clipRect.origin.x = CX - 4*DIGIT_SPACE - 3*DIGIT_SIZE + 1;
-					//#endif // HOUR_AT_MINUTE_HAND
 				}
 			}
 			clipRect.size.w = 4*(DIGIT_SIZE + DIGIT_SPACE);
 	    }
-	    //#endif // MINUTES_AT_HOUR_HAND
-		bmpFill(&bitmap2, GColorBlack);
-		
+
+		bmpFill(&bitmap2, GColorBlack);		
 		bmpRotate(&bitmap, &bitmap2, a, &clipRect, grect_center_point(&bitmap.bounds), GPoint(0,CX-bitmap.bounds.size.h/2));
-		
 		bmpDrawArc(&bitmap2, center, radius, 2, 0, 360, GColorWhite);
-		
+
 		if (showSeconds && (last.tm_hour != -1)) {
 			drawSec(&bitmap2, center, 267, 273, GColorBlack);
 		}
@@ -203,6 +244,14 @@ void logVariables(const char *msg) {
 void applyConfig() {
 	forceRefresh = true;
 	last.tm_hour = last.tm_min = last.tm_sec = -1;
+	
+	tick_timer_service_unsubscribe();
+	if (showSeconds) {
+		tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+	} else {
+		tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+	}
+
 	layer_mark_dirty(rootLayer);
 }
 
@@ -237,7 +286,6 @@ void in_received_handler(DictionaryIterator *received, void *context) {
 	}
 }
 
-
 void readConfig() {
 	if (persist_exists(CONFIG_KEY_SECONDS)) {
 		showSeconds = persist_read_int(CONFIG_KEY_SECONDS);
@@ -260,7 +308,30 @@ static void app_message_init(void) {
         app_message_open(64, 64);
 }
 
+void hideBattery(void *data) {
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "hideBattery()");
+	
+	showInfo = false;
+	layer_mark_dirty(layer);
+}
 
+void handle_tap(AccelAxisType axis, int32_t direction) {
+	if (showInfo) return;
+
+	//APP_LOG(APP_LOG_LEVEL_DEBUG, "handle_tap()");
+	
+	showInfo = true;
+	layer_mark_dirty(layer);
+
+	app_timer_register(4000, hideBattery, NULL);
+}
+
+void bt_handler(bool connected) {
+	btConnected = connected;
+	if (!connected) {
+		vibes_double_pulse();
+	}
+}
 
 void handle_init() {
 	int i;
@@ -271,12 +342,15 @@ void handle_init() {
 	
     app_message_init();
     readConfig();
-
-	clock12 = !clock_is_24h_style();
 	
 	for (i=0; i<NUM_IMAGES; i++) {
 		digitBmp[i] = gbitmap_create_with_resource(digitId[i]);
+		miniDigitBmp[i] = gbitmap_create_with_resource(miniDigitId[i]);
 	}
+	miniPercentBmp = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MPERCENT);
+	miniPointBmp = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MPOINT);
+	btOkBmp = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BTOK);
+	btFailedBmp = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BTFAILED);
 	
 	rootLayer = window_get_root_layer(window);
 	layer = layer_create(GRect(0,0,SCREENW,SCREENH));
@@ -286,20 +360,35 @@ void handle_init() {
 	now = time(NULL);
 	handle_tick(localtime(&now), 0);
 	
-	// Register for tick updates
-	tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+	if (showSeconds) {
+		tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
+	} else {
+		tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+	}
+	
+	accel_tap_service_subscribe(handle_tap);
+	
+	bluetooth_connection_service_subscribe(bt_handler);
+	btConnected = bluetooth_connection_service_peek();
 }
 
 void handle_deinit() {
 	int i;
 
+	bluetooth_connection_service_unsubscribe();
+	accel_tap_service_unsubscribe();
 	tick_timer_service_unsubscribe();
 
 	layer_destroy(layer);
 
 	for (i=0; i<NUM_IMAGES; i++) {
 		gbitmap_destroy(digitBmp[i]);
+		gbitmap_destroy(miniDigitBmp[i]);
 	}
+	gbitmap_destroy(miniPercentBmp);
+	gbitmap_destroy(miniPointBmp);
+	gbitmap_destroy(btOkBmp);
+	gbitmap_destroy(btFailedBmp);
 	
 	window_destroy(window);
 }

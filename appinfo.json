@@ -4,7 +4,7 @@
   "longName": "Minimalist 2.0",
   "companyName": "Jnm",
   "versionCode": 2,
-  "versionLabel": "2.0.3",
+  "versionLabel": "2.0.4",
   "watchapp": {
     "watchface": true
   },
@@ -70,6 +70,76 @@
         "type": "png",
         "name": "IMAGE_9",
         "file": "images/9.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M0",
+        "file": "images/m0.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M1",
+        "file": "images/m1.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M2",
+        "file": "images/m2.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M3",
+        "file": "images/m3.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M4",
+        "file": "images/m4.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M5",
+        "file": "images/m5.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M6",
+        "file": "images/m6.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M7",
+        "file": "images/m7.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M8",
+        "file": "images/m8.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_M9",
+        "file": "images/m9.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_MPERCENT",
+        "file": "images/mpercent.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_MPOINT",
+        "file": "images/mpoint.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_BTOK",
+        "file": "images/btok.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_BTFAILED",
+        "file": "images/btfailed.png"
       }
     ]
   }
